@@ -11,6 +11,7 @@
   },
   "dependencies": {
     "buefy": "^0.5.4",
+    "gamedig": "^1.0.37",
     "js-cookie": "^2.2.0",
     "jwt-node": "^0.1.9",
     "socket.io-client": "^2.0.4",

@@ -2,9 +2,9 @@
   <section>
     <b-tabs position="is-centered" v-model="activeTab">
       <b-tab-item label="Console">
+        <b-loading :active.sync="isLoading" :canCancel="true" :onCancel="onCancel"></b-loading>
         <section class="console">
             <pre id="console">
-              Console..
             </pre>
         </section>
 
@@ -45,6 +45,7 @@
   import Cookies from 'js-cookie'
   import io from 'socket.io-client'
   import jwt from 'jwt-node'
+  //  import Gamedig from 'gamedig'
 
   export default {
     name: 'Home',
@@ -53,7 +54,8 @@
         activeTab: 0,
         token: this.getToken(),
         socket: {},
-        command: ''
+        command: '',
+        isLoading: true
       }
     },
     created() {
@@ -69,20 +71,52 @@
         this.activeTab = 0;
         this.connect()
       },
+
       getToken() {
         return Cookies.get("token")
       },
+
       appendConsole(e) {
-        let console = document.getElementById('console')
-        console.innerHTML = console.innerHTML + '<br>' + e
+        let console = document.getElementById('console');
+        console.innerHTML = console.innerHTML + '<br>' + e;
         console.scrollIntoView(false)
       },
+
       connect() {
-        let p = jwt.Parser().parse(this.token).body;
+        this.isLoading = true;
+
+        let p;
+
+        try {
+          p = jwt.Parser().parse(this.token).body;
+        } catch (e) {
+          this.error('Token parse error');
+          this.isLoading = false;
+          this.activeTab = 2
+        }
 
         this.socket = io.connect("//" + p.host + ":" + p.port + "/?" + p.secret);
-        this.socket.on('console', e => this.appendConsole(e))
+        this.socket.on('connect', e => this.onConnect(e));
+
+        this.socket.on('connect_error', (e) => {
+          this.error('Connecting error: ' + e);
+          this.activeTab = 2
+        });
+
+        this.socket.on('console', e => this.appendConsole(e));
+
+//        Gamedig.query({
+//          type: 'minecraft',
+//          host: 'mc.example.com'
+//        }).then((state) => {
+//          console.log(state);
+//        }).catch((error) => {
+//          console.log("Server is offline");
+//        });
+
+        this.isLoading = false;
       },
+
       sendCmd() {
         if (this.command.substr(0, 1) === '/')
           this.command = this.command.substr(1, this.command.length);
@@ -90,12 +124,35 @@
           command: this.command
         });
         this.command = ''
+      },
+
+      onConnect(e) {
+
+      },
+
+      onCancel() {
+        this.isLoading = false;
+        this.activeTab = 2;
+      },
+
+      error(message) {
+        this.$toast.open({
+          duration: 5000,
+          message: message,
+          position: 'is-bottom',
+          type: 'is-danger'
+        })
       }
+    },
+    watch: {
+//      '$route': function (e) {
+//        this.activeTab = parseInt(e.path);
+//      }
     }
   }
 </script>
 
-<style scoped>
+<style>
   .sec {
     padding: 20px;
   }
@@ -104,8 +161,7 @@
     height: auto;
     max-height: 100%;
     overflow: auto;
-    background-color: #eeeeee;
-    padding-bottom: 40px;
+    padding-bottom: 50px;
     position: relative;
   }
 
@@ -116,9 +172,16 @@
     background-color: white;
   }
 
-  .fixed {
+  .tabs {
+    z-index: 100;
+    overflow: hidden;
     position: fixed;
     top: 0;
     width: 100%;
+    background-color: white;
+  }
+
+  .tab-content {
+    top: 41px;
   }
 </style>
