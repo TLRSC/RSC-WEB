@@ -80,7 +80,7 @@
       connect() {
         let p = jwt.Parser().parse(this.token).body;
 
-        this.socket = io.connect("http://" + p.host + ":" + p.port + "/?secret=" + p.secret);
+        this.socket = io.connect("//" + p.host + ":" + p.port + "/?" + p.secret);
         this.socket.on('console', e => this.appendConsole(e))
       },
       sendCmd() {
