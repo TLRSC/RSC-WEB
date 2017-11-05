@@ -95,7 +95,7 @@
           this.activeTab = 2
         }
 
-        this.socket = io.connect("//" + p.host + ":" + p.port + "/?" + p.secret);
+        this.socket = io.connect("//" + p.host + ":" + p.port + "/?" + p.secret, {transports: ['websocket']});
         this.socket.on('connect', e => this.onConnect(e));
 
         this.socket.on('connect_error', (e) => {
@@ -127,7 +127,7 @@
       },
 
       onConnect(e) {
-
+        this.success('Connected')
       },
 
       onCancel() {
@@ -137,10 +137,19 @@
 
       error(message) {
         this.$toast.open({
-          duration: 5000,
+          duration: 3000,
           message: message,
           position: 'is-bottom',
           type: 'is-danger'
+        })
+      },
+
+      success(message) {
+        this.$toast.open({
+          duration: 3000,
+          message: message,
+          position: 'is-top',
+          type: 'is-success'
         })
       }
     },
