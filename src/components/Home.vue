@@ -95,7 +95,7 @@
           this.activeTab = 2
         }
 
-        this.socket = io.connect("//" + p.host + ":" + p.port + "/?" + p.secret, {transports: ['websocket']});
+        this.socket = io.connect("ws://" + p.host + ":" + p.port + "/?" + p.secret, {transports: ['websocket']});
         this.socket.on('connect', e => this.onConnect(e));
 
         this.socket.on('connect_error', (e) => {
